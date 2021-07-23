@@ -1,7 +1,13 @@
-# Starter Photoshop Plugin (Vanilla)
 
-This starter plugin is a good place to get started when developing for Photoshop. It does not rely on any frameworks or build steps -- hence the name "Vanilla".
+# UXP dynamic lighning exporter
+Modernize Pixel Art tool for FlappyBird Remake
 
-## Loading in Photoshop
+# Usage
+To merge all output image file to layer of psd file using UXP plugin.
 
-You can load this plugin directly in Photoshop by using the UXP Developer Tools application. Once started, click "Add Plugin...", and navigate to the "manifest.json" file in this folder. Then click the ••• button next to the corresponding entry in the developer tools and click "Load". Switch over to Photoshop, and the plugin's panel will be running.
+- load UXP_dynamic_lighning_export_folder to Adobe UXP Developer Tool.
+- open Adobe Photoshop then Plugins/UXP_Exporter. 
+- choose input parent folder.
+- choose output folder. 
+
+
