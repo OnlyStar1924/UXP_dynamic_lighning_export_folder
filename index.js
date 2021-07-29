@@ -97,8 +97,8 @@ async function main(){
         action_dynamic_light[k].play();
         var tempFile = await themeFolder.createFile("image_" + action_dynamic_light[k].name + '.png');
         doc_next.save(tempFile);
-
       }
+
     doc_next.closeWithoutSaving();
     }
   }
