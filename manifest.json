@@ -15,7 +15,7 @@
       "type": "command",
       "id": "run",
       "label": {
-        "default": "Select Input Folder"
+        "default": "Start Export Action"
       }
     }
   ],

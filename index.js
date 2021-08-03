@@ -10,24 +10,26 @@ entrypoints.setup({
 
 async function main(){
   const app = require('photoshop').app;
+  const { zeroPad, splitCategoryName, isPSFile, formatString, checkFolderExist} = require('./scripts/utils.js');
+  
   app.bringToFront();
 
   const fs = require("uxp").storage.localFileSystem;
 
   const actionSet = app.actionTree;
-  var action_uxp;
+  var action_uxp = actionSet.filter(action => action.name == "UXP_dynamic_lighning")[0];
 
-  for(var i=0; i<actionSet.length; i++){
-    if(actionSet[i].name == 'UXP_dynamic_lighning'){
-      action_uxp = actionSet[i];
-      break;
-    }
+  if (!action_uxp)
+  {
+    return;
   }
-  // console.log(action_uxp.actions)
+
   const action_dynamic_light = action_uxp.actions
 
+  await app.showAlert("Select Input Folder");
+
   // open folder location
-  inputDir = await fs.getFolder();
+  const inputDir = await fs.getFolder();
 
   // alert choose outfile
   await app.showAlert("Select Output Folder");
@@ -40,77 +42,48 @@ async function main(){
 
   //loop tung file
   var listCat = [];
-  var catFolder;
-  var themeFolder;
-  var indexCat = 0;
-  var indexTheme = 0;
+
   for (var i = 0; i < inputArray.length; i++){
-    if (inputArray[i].name.slice(-4) == ".psd" || inputArray[i].name.slice(-4) == ".psb"){
-      var category = '';
-      var theme = '';
-      var j =0
-      for(j; j< inputArray[i].name.length; j++){
-        if (inputArray[i].name[j] == '_'){
-          break
-        }else{
-          category += inputArray[i].name[j]
-        }
-      }
-      j++;
-      for(j; j< inputArray[i].name.length; j++){
-        if (inputArray[i].name[j] == '.'){
-          break
-        }else{
-          theme += inputArray[i].name[j]
-        }
-      }
-      // console.log(category);
-      // console.log(theme);
-      if (listCat[listCat.length -1] != category){
+    if (isPSFile(inputArray[i].name)){
+      let splitNames = splitCategoryName(inputArray[i].name);
+      var category = splitNames[0];
+      var theme = splitNames[1];
+
+      var catIndex = listCat.findIndex(cat => cat == category);
+
+      if(catIndex < 0)
+      {
+        catIndex = listCat.length;
         listCat.push(category);
-
-        var strIndexCat = '';
-        if(indexCat < 10){
-          strIndexCat = '00';
-        }else if(indexCat < 100){
-          strIndexCat = '0';
-        }
-
-        catFolder = await outputDir.createFolder(strIndexCat + indexCat + formatString(category));
-        indexCat++;
-        indexTheme = 0;
       }
 
-      var strIndexTheme = '';
-      if(indexTheme < 10){
-        strIndexTheme = '00';
-      }else if(indexTheme < 100){
-        strIndexTheme = '0';
+      let catPath = zeroPad(catIndex, 3) + formatString(category);
+
+      const catFolder = await checkFolderExist(outputDir, catPath);
+
+      const subThemes = await catFolder.getEntries();
+
+      var themeIndex = 0;
+
+      if (subThemes.length > 0)
+      {
+        themeIndex = subThemes.length;
       }
 
-      themeFolder = await catFolder.createFolder(strIndexTheme + indexTheme + formatString(theme));
-      indexTheme++;
+      let themePath = zeroPad(themeIndex, 3) + formatString(theme);
+      
+      const themeFolder = await checkFolderExist(catFolder, themePath);
 
-      var doc_next = await app.open(inputArray[i]);
+      var open_document = await app.open(inputArray[i]);
 
       for(var k = 0; k < action_dynamic_light.length; k++){
-        action_dynamic_light[k].play();
-        var tempFile = await themeFolder.createFile("image_" + action_dynamic_light[k].name + '.png');
-        doc_next.save(tempFile);
+          await action_dynamic_light[k].play();
+          const tempFile = await themeFolder.createFile("image_" + action_dynamic_light[k].name + '.png');
+          await open_document.save(tempFile);
       }
 
-    doc_next.closeWithoutSaving();
+      open_document.closeWithoutSaving();
     }
   }
 }
 
-function formatString(str){
-  new_str ='';
-  for(var i =0; i < str.length; i++){
-    if(str[i] == str[i].toUpperCase()){
-      new_str += " ";
-    }
-    new_str += str[i];
-  }
-  return new_str;
-}
