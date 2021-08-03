@@ -1,33 +1,42 @@
 const { entrypoints } = require("uxp");
 
+const runx1 = true;
+const runx2 = false;
+
+
 // Set up entry points -- this defines the handler for menu items
 // If this plugin had a panel, we would define flyout menu items here
 entrypoints.setup({
   commands: {
-    run: () => main()
+    runx1: () => main(runx1),
+    runx2: () => main(runx2),
+    
   }
 });
 
-async function main(){
+
+async function main(bool){
   const app = require('photoshop').app;
+  const { zeroPad, splitCategoryName, isPSFile, formatString, checkFolderExist} = require('./scripts/utils.js');
+  
   app.bringToFront();
 
   const fs = require("uxp").storage.localFileSystem;
 
   const actionSet = app.actionTree;
-  var action_uxp;
+  var action_uxp = actionSet.filter(action => action.name == "UXP_dynamic_lighning")[0];
 
-  for(var i=0; i<actionSet.length; i++){
-    if(actionSet[i].name == 'UXP_dynamic_lighning'){
-      action_uxp = actionSet[i];
-      break;
-    }
+  if (!action_uxp)
+  {
+    return;
   }
-  // console.log(action_uxp.actions)
+
   const action_dynamic_light = action_uxp.actions
 
+  await app.showAlert("Select Input Folder");
+
   // open folder location
-  inputDir = await fs.getFolder();
+  const inputDir = await fs.getFolder();
 
   // alert choose outfile
   await app.showAlert("Select Output Folder");
@@ -40,81 +49,53 @@ async function main(){
 
   //loop tung file
   var listCat = [];
-  var catFolder;
-  var themeFolder;
-  var indexCat = 1;
-  var indexTheme = 0;
+
   for (var i = 0; i < inputArray.length; i++){
-    if (inputArray[i].name.slice(-4) == ".psd" || inputArray[i].name.slice(-4) == ".psb"){
-      var category = '';
-      var theme = '';
+    if (isPSFile(inputArray[i].name)){
+      let splitNames = splitCategoryName(inputArray[i].name);
+      var category = splitNames[0];
+      var theme = splitNames[1];
 
-      var index_space = inputArray[i].name.indexOf("_");
-  
-      category = inputArray[i].name.slice(0,index_space);
-      theme = inputArray[i].name.slice(index_space+1,-4);
+      var catIndex = listCat.findIndex(cat => cat == category);
 
-
-      // console.log(category);
-      // console.log(theme);
-
-      if (listCat[listCat.length -1] != category){
+      if(catIndex < 0)
+      {
+        catIndex = listCat.length;
         listCat.push(category);
-        if(category == "Default"){
-          catFolder = await outputDir.createFolder("000 Default");
-        }else{
-          var strIndexCat = '';
-          if(indexCat < 10){
-            strIndexCat = '00';
-          }else if(indexCat < 100){
-            strIndexCat = '0';
-          }
-          catFolder = await outputDir.createFolder(strIndexCat + indexCat + formatString(category));
-          indexCat++;
+      }
+
+      let catPath = zeroPad(catIndex, 3) + formatString(category);
+
+      const catFolder = await checkFolderExist(outputDir, catPath);
+
+      const subThemes = await catFolder.getEntries();
+
+      var themeIndex = 0;
+
+      if (subThemes.length > 0)
+      {
+        themeIndex = subThemes.length;
+      }
+
+      let themePath = zeroPad(themeIndex, 3) + formatString(theme);
+      
+      const themeFolder = await checkFolderExist(catFolder, themePath);
+
+      var open_document = await app.open(inputArray[i]);
+
+      if(bool == true){
+        for(var k = 0; k < action_dynamic_light.length; k++){
+          await action_dynamic_light[k].play();
+          const tempFile = await themeFolder.createFile("image_" + action_dynamic_light[k].name + '.png');
+          await open_document.save(tempFile);
         }
-        indexTheme = 0;
-
+      }else{
+        const tempFile = await themeFolder.createFile('Store.png');
+        await open_document.save(tempFile);
       }
+      
 
-      var strIndexTheme = '';
-      if(indexTheme < 10){
-        strIndexTheme = '00';
-      }else if(indexTheme < 100){
-        strIndexTheme = '0';
-      }
-
-      themeFolder = await catFolder.createFolder(strIndexTheme + indexTheme + formatString(theme));
-      indexTheme++;
-
-      var doc_next = await app.open(inputArray[i]);
-
-      // action dynamic ligthning
-      for(var k = 0; k < action_dynamic_light.length; k++){
-        await action_dynamic_light[k].play();
-        var tempFile = await themeFolder.createFile("image_" + action_dynamic_light[k].name + '.png');
-        await doc_next.save(tempFile);
-      }
-
-      // // action rename
-      // var tempFile = await themeFolder.createFile('Store.png');
-      // doc_next.save(tempFile);
-
-    await doc_next.closeWithoutSaving();
+      open_document.closeWithoutSaving();
     }
   }
-}
-
-function formatString(str){
-  new_str ='';
-  for(var i =0; i < str.length; i++){
-    if(str[i] == str[i].toUpperCase()){
-      new_str += " ";
-    }
-    new_str += str[i];
-  }
-  // new_str.replace(" Of ", " of ");
-  // new_str.replace(" A ", " a ");
-  // new_str.replace(" An ", " a ");
-
-  return new_str;
 }

@@ -13,9 +13,16 @@
   "entrypoints": [
     {
       "type": "command",
-      "id": "run",
+      "id": "runx1",
       "label": {
-        "default": "Select Input Folder"
+        "default": "Start Export Action And Dynamic Lighting"
+      }
+    },   
+    {
+      "type": "command",
+      "id": "runx2",
+      "label": {
+        "default": "Start Export Action"
       }
     }
   ],
