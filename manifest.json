@@ -13,16 +13,16 @@
   "entrypoints": [
     {
       "type": "command",
-      "id": "runx1",
+      "id": "dynamicLighting",
       "label": {
-        "default": "Start Export Action And Dynamic Lighting"
+        "default": "Dynamic Lighting Assets"
       }
     },   
     {
       "type": "command",
-      "id": "runx2",
+      "id": "storeDisplay",
       "label": {
-        "default": "Start Export Action"
+        "default": "Store Display Assets"
       }
     }
   ],

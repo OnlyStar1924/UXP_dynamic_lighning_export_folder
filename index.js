@@ -1,21 +1,16 @@
 const { entrypoints } = require("uxp");
 
-const runx1 = true;
-const runx2 = false;
-
-
 // Set up entry points -- this defines the handler for menu items
 // If this plugin had a panel, we would define flyout menu items here
 entrypoints.setup({
   commands: {
-    runx1: () => main(runx1),
-    runx2: () => main(runx2),
-    
+    dynamicLighting: () => main(true),
+    storeDisplay: () => main(false)
   }
 });
 
 
-async function main(bool){
+async function main(export360){
   const app = require('photoshop').app;
   const { zeroPad, splitCategoryName, isPSFile, formatString, checkFolderExist} = require('./scripts/utils.js');
   
@@ -26,10 +21,12 @@ async function main(bool){
   const actionSet = app.actionTree;
   var action_uxp = actionSet.filter(action => action.name == "UXP_dynamic_lighning")[0];
 
+
   if (!action_uxp)
   {
     return;
   }
+
 
   const action_dynamic_light = action_uxp.actions
 
@@ -52,17 +49,26 @@ async function main(bool){
 
   for (var i = 0; i < inputArray.length; i++){
     if (isPSFile(inputArray[i].name)){
+
       let splitNames = splitCategoryName(inputArray[i].name);
       var category = splitNames[0];
       var theme = splitNames[1];
 
-      var catIndex = listCat.findIndex(cat => cat == category);
+      var catIndex = listCat.findIndex(cat => cat == category) + 1;
 
-      if(catIndex < 0)
+      if(category.includes("Default"))
       {
-        catIndex = listCat.length;
-        listCat.push(category);
+        catIndex = 0;
       }
+      else 
+      {
+        if(catIndex <= 0)
+        {
+          catIndex = listCat.length + 1;
+          listCat.push(category);
+        }
+      }
+
 
       let catPath = zeroPad(catIndex, 3) + formatString(category);
 
@@ -83,14 +89,17 @@ async function main(bool){
 
       var open_document = await app.open(inputArray[i]);
 
-      if(bool == true){
-        for(var k = 0; k < action_dynamic_light.length; k++){
+      if(export360 == true){
+        for (var k = 0; k < action_dynamic_light.length; k++)
+        {
           await action_dynamic_light[k].play();
           const tempFile = await themeFolder.createFile("image_" + action_dynamic_light[k].name + '.png');
           await open_document.save(tempFile);
         }
-      }else{
-        const tempFile = await themeFolder.createFile('Store.png');
+      }
+      else
+      {
+        const tempFile = await themeFolder.createFile('store.png');
         await open_document.save(tempFile);
       }
       
