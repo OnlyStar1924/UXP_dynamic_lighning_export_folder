@@ -4,3 +4,7 @@ __pycache__
 !.empty
 input/*
 output/*
+input_old/*
+output_96/*
+output_192/*
+
