@@ -49,24 +49,6 @@ async function main(){
       var category = '';
       var theme = '';
 
-
-      // var j =0
-      // for(j; j< inputArray[i].name.length; j++){
-      //   if (inputArray[i].name[j] == '_'){
-      //     break
-      //   }else{
-      //     category += inputArray[i].name[j]
-      //   }
-      // }
-      // j++;
-      // for(j; j< inputArray[i].name.length; j++){
-      //   if (inputArray[i].name[j] == '.'){
-      //     break
-      //   }else{
-      //     theme += inputArray[i].name[j]
-      //   }
-      // }
-
       var index_space = inputArray[i].name.indexOf("_");
   
       category = inputArray[i].name.slice(0,index_space);
@@ -117,7 +99,7 @@ async function main(){
       // var tempFile = await themeFolder.createFile('Store.png');
       // doc_next.save(tempFile);
 
-    doc_next.closeWithoutSaving();
+    await doc_next.closeWithoutSaving();
     }
   }
 }
@@ -130,15 +112,9 @@ function formatString(str){
     }
     new_str += str[i];
   }
-
-  // var index_of = new_str.indexOf(" Of ");
-  // new_str[index_of+1] = "o";
-
-  // var index_a = new_str.indexOf(" A ");
-  // new_str[index_a + 1] = "a";
-
-  // var index_an = new_str.indexOf(" An ");
-  // new_str[index_an + 1] = "o";
+  // new_str.replace(" Of ", " of ");
+  // new_str.replace(" A ", " a ");
+  // new_str.replace(" An ", " a ");
 
   return new_str;
 }
