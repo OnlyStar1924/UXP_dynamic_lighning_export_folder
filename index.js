@@ -93,11 +93,16 @@ async function main(){
 
       var doc_next = await app.open(inputArray[i]);
 
-      for(var k = 0; k < action_dynamic_light.length; k++){
-        action_dynamic_light[k].play();
-        var tempFile = await themeFolder.createFile("image_" + action_dynamic_light[k].name + '.png');
-        doc_next.save(tempFile);
-      }
+      // // action dynamic ligthning
+      // for(var k = 0; k < action_dynamic_light.length; k++){
+      //   await action_dynamic_light[k].play();
+      //   var tempFile = await themeFolder.createFile("image_" + action_dynamic_light[k].name + '.png');
+      //   await doc_next.save(tempFile);
+      // }
+
+      // action rename
+      var tempFile = await themeFolder.createFile('Store.png');
+      doc_next.save(tempFile);
 
     doc_next.closeWithoutSaving();
     }
